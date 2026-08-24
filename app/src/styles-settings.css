@@ -1,0 +1,177 @@
+/* Settings / Profile page — reuses .phead/.cols/.card/.drow/.btn from the Ring
+   page; this file only adds the form + estimate-panel vocabulary. */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.field:last-of-type {
+  border-bottom: none;
+}
+.field > label {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.field .hintlab {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* segmented control (units / sex) */
+.seg {
+  display: inline-flex;
+  background: var(--card-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-pill);
+  padding: 3px;
+  gap: 3px;
+  align-self: flex-start;
+}
+.segbtn {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: 0.16s ease;
+}
+.segbtn:hover:not(.on) {
+  color: var(--ink);
+}
+.segbtn.on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+/* number inputs */
+.inrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inp {
+  width: 120px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: var(--card-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  outline: none;
+  transition: 0.16s ease;
+}
+.inp.short {
+  width: 66px;
+}
+.inp:focus {
+  border-color: var(--recovery);
+  background: var(--card);
+  box-shadow: 0 0 0 3px var(--recovery-tint);
+}
+.inp::-webkit-outer-spin-button,
+.inp::-webkit-inner-spin-button {
+  opacity: 0.4;
+}
+.suffix {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* save bar */
+.savebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline-soft);
+  flex-wrap: wrap;
+}
+.savehint {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.savehint.dirty {
+  color: var(--body);
+}
+
+/* estimate rows (right column) */
+.est {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.est:last-of-type {
+  border-bottom: none;
+}
+.est .fic {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.est .fic svg {
+  width: 19px;
+  height: 19px;
+}
+.estbody {
+  flex: 1;
+  min-width: 0;
+}
+.estlab {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.estnote {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.estval {
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.estval small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.estfoot {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline-soft);
+  font-size: 11.5px;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--muted);
+}

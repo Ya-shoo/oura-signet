@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oura-local — Home (Wii-channel mockup)</title>
+<style>
+  :root{
+    --backdrop:#E6DCC9; --bg:#F3ECDF; --card:#FCFAF3; --card-2:#FBF6EB;
+    --ink:#43392E; --ink-soft:#6B6053; --muted:#9C8E7B;
+    --hairline:rgba(120,95,60,.10); --hairline-soft:rgba(120,95,60,.06);
+    --recovery:#6f92ba; --recovery-tint:#EAF0F7;
+    --sleep:#8b81c2;    --sleep-tint:#EEEBF7;
+    --body:#d0876a;     --body-tint:#F8ECE4;
+    --activity:#7aa17f; --activity-tint:#EBF2EA;
+    --good:#6fa07a; --watch:#c9a24e; --dev:#c97e63;
+    --shadow: 0 1px 2px rgba(90,72,48,.05), 0 3px 8px -3px rgba(90,72,48,.10);
+    --shadow-hover: 0 2px 4px rgba(90,72,48,.06), 0 12px 22px -10px rgba(90,72,48,.16);
+    --pop-shadow: 0 6px 16px -8px rgba(90,72,48,.20), 0 26px 50px -22px rgba(70,52,30,.34);
+    --r-lg:26px; --r-md:20px; --r-sm:14px; --r-pill:999px;
+    --font: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "Nunito", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font); color:var(--ink); background:var(--backdrop);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.5'/></svg>");
+    background-blend-mode:multiply; -webkit-font-smoothing:antialiased;
+    display:flex; align-items:center; justify-content:center; padding:18px; min-height:100vh;}
+  .window{width:min(1360px,100%); background:var(--bg); border-radius:22px; box-shadow:0 2px 6px rgba(70,52,30,.10),0 40px 80px -40px rgba(70,52,30,.40); overflow:hidden; border:1px solid rgba(120,95,60,.08)}
+  .titlebar{height:42px; display:flex; align-items:center; gap:14px; padding:0 18px; background:var(--card); border-bottom:1px solid var(--hairline-soft)}
+  .lights{display:flex; gap:8px}.lights i{width:12px;height:12px;border-radius:50%;display:block}
+  .lights .r{background:#e8a09a}.lights .y{background:#e7c983}.lights .g{background:#a9cf98}
+  .titlebar .app{font-size:13px;color:var(--muted);font-weight:600}
+  .app-body{display:grid; grid-template-columns:74px 1fr}
+
+  .rail{border-right:1px solid var(--hairline-soft); padding:16px 0; display:flex; flex-direction:column; align-items:center; gap:7px}
+  .brand{width:40px;height:40px;border-radius:13px;background:var(--recovery-tint);display:grid;place-items:center;margin-bottom:8px;box-shadow:var(--shadow)}
+  .brand svg{width:21px;height:21px}
+  .nav{display:flex;flex-direction:column;gap:5px;align-items:center;flex:1}
+  .nav a{width:46px;height:42px;border-radius:14px;display:grid;place-items:center;color:var(--muted);text-decoration:none;transition:.18s ease}
+  .nav a svg{width:21px;height:21px;stroke-width:1.9}
+  .nav a:hover{background:var(--card);color:var(--ink-soft)}
+  .nav a.active{background:var(--card);color:var(--recovery);box-shadow:var(--shadow)}
+
+  .main{padding:16px 24px 18px}
+  .strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--card);border-radius:var(--r-md);padding:12px 18px;box-shadow:var(--shadow);border:1px solid var(--hairline-soft);margin-bottom:14px}
+  .hello{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+  .hello h1{font-size:19px;font-weight:700;letter-spacing:-.01em}
+  .hello .sub{font-size:12.5px;color:var(--muted)}.hello .sub b{color:var(--ink-soft);font-weight:600}
+  .radio-pill{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;background:var(--activity-tint);color:#5a7d63;padding:7px 13px;border-radius:var(--r-pill)}
+  .radio-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px rgba(111,160,122,.18)}
+  .btn{font-family:var(--font);font-size:13.5px;font-weight:700;letter-spacing:-.01em;cursor:pointer;border:none;border-radius:var(--r-pill);padding:11px 18px;display:inline-flex;align-items:center;gap:8px;transition:.18s ease;color:#fff;background:var(--sleep);box-shadow:var(--shadow)}
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);filter:saturate(1.05)}
+  .btn.ghost{background:var(--card-2);color:var(--ink-soft);box-shadow:none;border:1px solid var(--hairline)}
+  .btn.ghost:hover{background:var(--card);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn svg{width:16px;height:16px}
+
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:144px;grid-auto-flow:row dense;gap:14px}
+  .big{grid-column:span 2;grid-row:span 2}
+  .wide{grid-column:span 2}
+  .tile{background:var(--card);border-radius:var(--r-lg);padding:15px 16px 13px;box-shadow:var(--shadow);border:1px solid var(--hairline-soft);
+    display:flex;flex-direction:column;gap:6px;position:relative;z-index:1;
+    transition:transform .2s cubic-bezier(.2,.9,.3,1.1), box-shadow .2s ease; animation:rise .5s cubic-bezier(.2,.8,.3,1.05) both;}
+  .tile:hover{z-index:40}
+  .thead{display:flex;align-items:center;gap:9px}
+  .chip{width:29px;height:29px;border-radius:10px;display:grid;place-items:center;flex:none}
+  .chip svg{width:16px;height:16px;stroke-width:2}
+  .tname{font-size:12px;font-weight:700;color:var(--ink-soft)}
+  .tname .fam{display:block;font-size:9.5px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+  .value{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .value small{font-size:13px;font-weight:700;color:var(--muted);margin-left:2px}
+  .delta{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+  .delta .tag{color:var(--muted);font-weight:600}
+  .spark{margin-top:auto}
+  .spark svg{width:100%;height:34px;display:block;overflow:visible;cursor:crosshair}
+  .band{fill:currentColor;opacity:.10}
+  .line{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .area{opacity:.12}.dotend{fill:currentColor}
+  .mk{fill:currentColor;stroke:var(--card);stroke-width:2.5;opacity:0;transition:opacity .12s}
+  .tile.charting .mk{opacity:1}
+
+  .arcrow{display:flex;align-items:center;gap:12px;margin-top:4px}
+  .arcrow svg{width:58px;height:58px;flex:none}
+  .arcrow .num{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .arcrow .lab{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+
+  .hyp{display:flex;align-items:flex-end;gap:3px;height:78px;margin-top:12px;cursor:crosshair}
+  .hyp i{flex:1;border-radius:5px;display:block;opacity:.92;transition:opacity .12s}
+  .hyp:hover i{opacity:.45}.hyp i:hover{opacity:1}
+  .legend{display:flex;gap:13px;margin-top:11px;font-size:10.5px;color:var(--muted);font-weight:600;flex-wrap:wrap}
+  .legend b{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+  .legend b::before{content:"";width:9px;height:9px;border-radius:3px;background:currentColor}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:34px;margin-top:auto;cursor:crosshair}
+  .bars i{flex:1;border-radius:5px 5px 3px 3px;background:currentColor;opacity:.85;display:block;transition:opacity .12s}
+  .bars:hover i{opacity:.45}.bars i:hover{opacity:1}
+
+  .hint{position:absolute;top:14px;right:14px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;color:var(--muted);background:var(--card-2);font-size:11px;font-weight:800;opacity:.5;transition:.18s ease}
+  .tile:hover .hint{opacity:0;transform:scale(.6)}
+
+  /* pop-out detail — a smaller card that lifts over its OWN channel (contained; never covers neighbors) */
+  .pop{position:absolute; top:50%; left:8px; right:8px; margin:0 auto; max-height:calc(100% + 26px);
+    background:var(--card); border:1px solid var(--hairline); border-radius:19px;
+    box-shadow:var(--pop-shadow); padding:12px 15px 13px; z-index:20; pointer-events:none; overflow:hidden;
+    opacity:0; transform:translateY(-50%) scale(.88); transform-origin:center;
+    transition:opacity .16s ease, transform .26s cubic-bezier(.2,.9,.3,1.3);
+    display:flex; flex-direction:column; gap:7px;}
+  .tile:hover .pop{opacity:1; transform:translateY(-50%) scale(1)}
+  .tile.charting .pop{opacity:0 !important; transform:translateY(-50%) scale(.88) !important; transition:opacity .1s ease}
+  .pop .psum{display:none} .big .pop .psum,.wide .pop .psum{display:block}
+  .poph{display:flex;align-items:center;gap:8px}
+  .pdot{width:11px;height:11px;border-radius:4px;flex:none}
+  .pname{font-size:13px;font-weight:800;color:var(--ink)}
+  .pname .pfam{display:block;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .psum{font-size:19px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:-2px}
+  .pexp{font-size:12px;line-height:1.5;color:var(--ink-soft);font-weight:600}
+  .prows{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+  .prow{display:flex;justify-content:space-between;font-size:12px;gap:14px}
+  .prow span{color:var(--muted);font-weight:600}
+  .prow b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pop>*{flex:none;opacity:0;transform:translateY(6px);transition:opacity .2s ease, transform .24s cubic-bezier(.2,.9,.3,1.2)}
+  .tile:hover:not(.charting) .pop>*{opacity:1;transform:none}
+  .tile:hover:not(.charting) .pop>*:nth-child(2){transition-delay:.03s}
+  .tile:hover:not(.charting) .pop>*:nth-child(3){transition-delay:.07s}
+  .tile:hover:not(.charting) .pop>*:nth-child(4){transition-delay:.11s}
+
+  /* chart data tooltip (fixed) */
+  .tip{position:fixed;pointer-events:none;background:var(--ink);color:#FBF6EB;font-family:var(--font);
+    font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:9px;transform:translate(-50%,-115%);
+    white-space:nowrap;opacity:0;transition:opacity .12s ease;z-index:99;box-shadow:0 6px 16px -6px rgba(0,0,0,.35)}
+  .tip.on{opacity:1}
+  .tip small{color:#c9bda6;font-weight:600;margin-left:4px}
+
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .tile:nth-child(1){animation-delay:.02s}.tile:nth-child(2){animation-delay:.05s}.tile:nth-child(3){animation-delay:.08s}
+  .tile:nth-child(4){animation-delay:.11s}.tile:nth-child(5){animation-delay:.14s}.tile:nth-child(6){animation-delay:.17s}
+  .tile:nth-child(7){animation-delay:.20s}.tile:nth-child(8){animation-delay:.23s}.tile:nth-child(9){animation-delay:.26s}.tile:nth-child(10){animation-delay:.29s}
+
+  .foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11.5px}
+  .addbtn{font-family:var(--font);font-weight:700;font-size:12px;color:var(--ink-soft);background:var(--card);border:1px dashed var(--hairline);border-radius:var(--r-pill);padding:8px 15px;cursor:pointer}
+  .addbtn:hover{background:var(--card-2)}
+</style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app">oura-local</div></div>
+    <div class="app-body">
+      <aside class="rail">
+        <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="#6f92ba" stroke-width="2.1"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="#6f92ba" stroke="none"/></svg></div>
+        <nav class="nav">
+          <a class="active" title="Home" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/></svg></a>
+          <a title="Trends" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c3 0 4-8 8-8s5 6 8 6"/></svg></a>
+          <a title="Sleep" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg></a>
+          <a title="Body" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-4.6-6-9a6 6 0 0 1 12 0c0 4.4-6 9-6 9z"/></svg></a>
+          <a title="Activity" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 5 4-12 2 7h4"/></svg></a>
+          <a title="Ring" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="6"/><path d="M9 6l1-2h4l1 2"/></svg></a>
+          <a title="Settings" href="#" style="margin-top:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M18.5 5.5l-2 2M7.5 16.5l-2 2"/></svg></a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="strip">
+          <div class="hello"><h1>Good morning</h1><div class="sub">Last sync <b>7m ago</b> · battery <b>86%</b> · worn <b>7h 12m</b> last night</div></div>
+          <span class="radio-pill"><span class="dot"></span>Radio on · syncable</span>
+          <button class="btn ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-3 6"/><path d="M20 5v6h-6"/></svg>Sync now</button>
+          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg>Dock &amp; Silence</button>
+        </div>
+
+        <div class="grid">
+          <div class="tile big" data-metric="sleep">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--sleep-tint);color:var(--sleep)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg></span><span class="tname"><span class="fam">Sleep · last night</span>Time asleep</span></div>
+            <div style="display:flex;align-items:baseline;gap:14px;margin-top:4px"><div class="value" style="font-size:40px">7<small>h</small> 12<small>m</small></div><div class="delta" style="color:var(--good)">efficiency 91% · asleep 11:33p</div></div>
+            <div class="hyp" data-hyp="1"></div>
+            <div class="legend"><b style="color:#5b53a6">deep 1h20</b><b style="color:#8b81c2">rem 1h48</b><b style="color:#b7b0e0">light 3h44</b><b style="color:#d8cdae">awake 20m</b></div>
+          </div>
+
+          <div class="tile" data-metric="readiness">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4.2 4.2 0 0 1 7-3 4.2 4.2 0 0 1 7 3c0 5.5-7 10-7 10z"/></svg></span><span class="tname"><span class="fam">Recovery</span>Readiness</span></div>
+            <div class="arcrow" style="color:var(--recovery)">
+              <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="var(--recovery-tint)" stroke-width="13"/><circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="55.3" transform="rotate(-90 50 50)"/></svg>
+              <div><div class="num">78</div><div class="lab">balanced</div></div>
+            </div>
+          </div>
+
+          <div class="tile" data-metric="rhr">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 3 10 2-6 2 3h5"/></svg></span><span class="tname"><span class="fam">Recovery</span>Resting HR</span></div>
+            <div class="value">52<small>bpm</small></div>
+            <div class="delta" style="color:var(--good)">▼ 2 <span class="tag">vs base</span></div>
+            <div class="spark" style="color:var(--recovery)"><svg data-spark="rhr"></svg></div>
+          </div>
+
+          <div class="tile" data-metric="hrv">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2 6 4-14 3 10 2-4h4"/></svg></span><span class="tname"><span class="fam">Recovery</span>HRV · rMSSD</span></div>
+            <div class="value">64<small>ms</small></div>
+            <div class="delta" style="color:var(--good)">▲ 6 <span class="tag">+0.8σ</span></div>
+            <div class="spark" style="color:var(--recovery)"><svg data-spark="hrv"></svg></div>
+          </div>
+
+          <div class="tile" data-metric="spo2">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--body-tint);color:var(--body)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></span><span class="tname"><span class="fam">Body</span>SpO₂ · night</span></div>
+            <div class="value">97<small>%</small></div>
+            <div class="delta" style="color:var(--good)">ODI 1.2 · steady</div>
+            <div class="spark" style="color:var(--body)"><svg data-spark="spo2"></svg></div>
+          </div>
+
+          <div class="tile" data-metric="temp">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--body-tint);color:var(--body)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a2 2 0 0 1 2 2v8.5a4 4 0 1 1-4 0V5a2 2 0 0 1 2-2z"/></svg></span><span class="tname"><span class="fam">Body</span>Temp deviation</span></div>
+            <div class="value">−0.1<small>°C</small></div>
+            <div class="delta" style="color:var(--muted)">normal range</div>
+            <div class="spark" style="color:var(--body)"><svg data-spark="temp"></svg></div>
+          </div>
+
+          <div class="tile" data-metric="resp">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--body-tint);color:var(--body)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3c1 0 1-4 2-4s1.5 8 2.5 8 1.5-6 2.5-6 1 2 2 2h5"/></svg></span><span class="tname"><span class="fam">Body</span>Breathing</span></div>
+            <div class="value">14<small>br/min</small></div>
+            <div class="delta" style="color:var(--muted)">steady overnight</div>
+            <div class="spark" style="color:var(--body)"><svg data-spark="resp"></svg></div>
+          </div>
+
+          <div class="tile wide" data-metric="steps">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--activity-tint);color:var(--activity)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c1.6 0 2.5 1.6 2.5 4S10.5 15 9 15s-2.5-.5-2.5-3S7.4 4 9 4z"/><path d="M6.7 15.5c-.4 1.8.2 3 1.6 3.4M15 8c1.5 0 2.4 1.6 2.4 4s-1 4-2.4 4"/></svg></span><span class="tname"><span class="fam">Activity</span>Steps · today</span></div>
+            <div class="value">6,204</div>
+            <div class="delta" style="color:var(--activity)">▲ 12% <span class="tag">vs your average</span></div>
+            <div class="bars" style="color:var(--activity)" data-bars="steps"></div>
+          </div>
+
+          <div class="tile wide" data-metric="rhr28">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c3 0 4-8 8-8s5 6 8 6"/></svg></span><span class="tname"><span class="fam">Recovery · 28 days</span>Resting HR trend</span></div>
+            <div class="delta" style="color:var(--muted);margin-top:2px">baseline 54 ± 3 bpm · slope ↓ 1.2/mo · <span style="color:var(--good)">trending calm</span></div>
+            <div class="spark" style="color:var(--recovery);margin-top:6px"><svg data-trend="rhr28" style="height:52px"></svg></div>
+          </div>
+
+          <div class="tile wide" data-metric="met">
+            <span class="hint">i</span>
+            <div class="thead"><span class="chip" style="background:var(--activity-tint);color:var(--activity)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 5 4-12 2 7h4"/></svg></span><span class="tname"><span class="fam">Activity · today</span>Movement · MET</span></div>
+            <div class="delta" style="color:var(--muted);margin-top:2px">avg 1.56 MET · peak 2.6 · <span style="color:var(--activity)">31 min moving</span></div>
+            <div class="spark" style="color:var(--activity);margin-top:6px"><svg data-trend="met" style="height:52px"></svg></div>
+          </div>
+        </div>
+
+        <div class="foot"><button class="addbtn">＋ Add a channel</button><span>hover a card for detail · hover a graph or bars for point data · drag to rearrange</span></div>
+      </main>
+    </div>
+  </div>
+
+<script>
+  const NS="http://www.w3.org/2000/svg";
+  function elx(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+  function mk(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
+  function smooth(P,t){t=t||.18;if(P.length<2)return"";let d=`M ${P[0][0]},${P[0][1]}`;for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;const c1x=p1[0]+(p2[0]-p0[0])*t,c1y=p1[1]+(p2[1]-p0[1])*t,c2x=p2[0]-(p3[0]-p1[0])*t,c2y=p2[1]-(p3[1]-p1[1])*t;d+=` C ${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(2)} ${p2[0].toFixed(2)},${p2[1].toFixed(2)}`;}return d;}
+  function ptsOf(data,W,H,pad){const mn=Math.min(...data),mx=Math.max(...data),r=(mx-mn)||1,px=pad||4;return data.map((v,i)=>[px+i*(W-2*px)/(data.length-1),H-5-((v-mn)/r)*(H-10)]);}
+  function measure(svg){const r=svg.getBoundingClientRect();return [Math.max(60,Math.round(r.width)),Math.max(24,Math.round(r.height))];}
+
+  const DATA={
+    rhr:[57,56,55,56,54,55,53,54,53,52,53,52], hrv:[48,52,50,55,54,58,57,60,59,62,63,64],
+    temp:[.1,0,.05,-.05,0,-.1,-.05,-.15,-.1,-.05,-.1,-.1], spo2:[96,97,96,97,97,96,97,98,97,97,97,97],
+    resp:[14,13,14,15,14,13,14,14,15,14,14,14],
+    rhr28:[58,57,58,56,57,55,56,57,55,54,55,53,54,55,53,54,52,53,54,52,53,52,53,51,52,53,52,52],
+    met:[1,1.1,1.3,1.2,1.1,2.1,2.6,1.9,1.4,1.2,1.3,1.9,2.2,1.7,1.3,1.2,1.1,1.4,1.6,1.3]
+  };
+  const UNIT={rhr:'bpm',hrv:'ms',temp:'°C',spo2:'%',resp:'/min',rhr28:'bpm',met:'MET'};
+  const DAILY={rhr:1,hrv:1,temp:1,spo2:1,resp:1,rhr28:1};
+  function fmtVal(v,key){if(key==='temp')return (v>0?'+':'')+v.toFixed(1)+' °C';if(key==='met')return v.toFixed(1)+' MET';return (Number.isInteger(v)?v:Math.round(v))+' '+UNIT[key];}
+  function fmtLbl(i,n,key){if(key==='met'){const h=Math.round(7+i*(15/(n-1)));return (h>12?h-12:h)+(h>=12?'p':'a');}const d=n-1-i;return d===0?'today':d+'d ago';}
+
+  // shared fixed tooltip
+  const tip=mk('div','tip'); document.body.appendChild(tip);
+  function showTip(cx,cy,main,sub){tip.innerHTML=main+(sub?(' <small>'+sub+'</small>'):''); tip.style.left=cx+'px'; tip.style.top=cy+'px'; tip.classList.add('on');}
+  function hideTip(){tip.classList.remove('on');}
+
+  // line charts + hover point data
+  document.querySelectorAll('svg[data-spark],svg[data-trend]').forEach(svg=>{
+    const key=svg.dataset.spark||svg.dataset.trend, data=DATA[key], trend=!!svg.dataset.trend;
+    const [W,H]=measure(svg); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    const P=ptsOf(data,W,H), line=smooth(P);
+    if(trend){const mn=Math.min(...data),mx=Math.max(...data),r=(mx-mn)||1,mean=data.reduce((a,b)=>a+b,0)/data.length,sd=Math.sqrt(data.reduce((a,b)=>a+(b-mean)**2,0)/data.length),y=v=>H-5-((v-mn)/r)*(H-10),yT=y(mean+sd),yB=y(mean-sd);
+      svg.appendChild(elx('rect',{class:'band',x:0,y:Math.min(yT,yB),width:W,height:Math.abs(yB-yT)||6,rx:6}));
+      svg.appendChild(elx('path',{class:'area',d:line+` L ${P[P.length-1][0].toFixed(2)},${H} L ${P[0][0].toFixed(2)},${H} Z`,fill:'currentColor',stroke:'none'}));}
+    svg.appendChild(elx('path',{class:'line',d:line}));
+    const dot=elx('circle',{class:'dotend',cx:P[P.length-1][0],cy:P[P.length-1][1],r:trend?3.2:2.8});
+    const mkr=elx('circle',{class:'mk',cx:-99,cy:-99,r:4}); svg.append(dot,mkr);
+    const tile=svg.closest('.tile');
+    svg.addEventListener('mouseenter',()=>tile.classList.add('charting'));
+    svg.addEventListener('mouseleave',()=>{tile.classList.remove('charting'); mkr.setAttribute('cx',-99); hideTip();});
+    svg.addEventListener('mousemove',e=>{
+      const rect=svg.getBoundingClientRect(), sx=(e.clientX-rect.left)*(W/rect.width);
+      let bi=0,bd=1e9; for(let i=0;i<P.length;i++){const dd=Math.abs(P[i][0]-sx);if(dd<bd){bd=dd;bi=i;}}
+      mkr.setAttribute('cx',P[bi][0]); mkr.setAttribute('cy',P[bi][1]);
+      const pcx=rect.left+P[bi][0]*(rect.width/W), pcy=rect.top+P[bi][1]*(rect.height/H);
+      showTip(pcx,pcy, fmtVal(data[bi],key), fmtLbl(bi,data.length,key));
+    });
+  });
+
+  // steps bars + hover
+  const STEPDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Today'], STEPVALS=[4180,6090,5320,7010,8120,5880,9240,6790,6204];
+  document.querySelectorAll('[data-bars]').forEach(box=>{const mx=Math.max(...STEPVALS),tile=box.closest('.tile');
+    STEPVALS.forEach((v,i)=>{const b=mk('i');b.style.height=(28+(v/mx)*12)+'%';
+      b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();showTip(r.left+r.width/2,r.top,v.toLocaleString(),STEPDAYS[i]);});
+      box.appendChild(b);});
+    box.addEventListener('mouseenter',()=>tile.classList.add('charting'));
+    box.addEventListener('mouseleave',()=>{tile.classList.remove('charting');hideTip();});});
+
+  // hypnogram + hover
+  const HYP=['light','deep','deep','rem','light','deep','rem','light','awake','rem','light','deep','light','rem','light','deep','light','rem','light','awake'];
+  const HCOL={deep:'#5b53a6',rem:'#8b81c2',light:'#b7b0e0',awake:'#d8cdae'},HH={deep:'100%',rem:'74%',light:'52%',awake:'30%'},HNAME={deep:'Deep',rem:'REM',light:'Light',awake:'Awake'};
+  function clock(i){let t=1413+i*(432/HYP.length);t%=1440;let h=Math.floor(t/60),m=Math.floor(t%60);const ap=h>=12?'p':'a';h=h%12||12;return h+':'+(m<10?'0':'')+m+ap;}
+  const hypBox=document.querySelector('[data-hyp]'),tileS=hypBox.closest('.tile');
+  HYP.forEach((l,i)=>{const seg=mk('i');seg.style.background=HCOL[l];seg.style.height=HH[l];
+    seg.addEventListener('mousemove',e=>{const r=seg.getBoundingClientRect();showTip(r.left+r.width/2,r.top,HNAME[l],clock(i));});
+    hypBox.appendChild(seg);});
+  hypBox.addEventListener('mouseenter',()=>tileS.classList.add('charting'));
+  hypBox.addEventListener('mouseleave',()=>{tileS.classList.remove('charting');hideTip();});
+
+  // build floating pop-out detail cards
+  const R='--recovery',B='--body',S='--sleep',A='--activity';
+  const DETAIL={
+    sleep:{fam:'Sleep · last night',name:'Time asleep',accent:S,exp:'Total time asleep plus the stages within it — deep, REM, light, awake. The ring doesn’t transmit a hypnogram, so we stage the night locally from your heart rate, HRV, temperature and motion — a transparent model you own.'},
+    readiness:{fam:'Recovery',name:'Readiness',accent:R,exp:'A recovery score blending your overnight HRV, resting heart rate, temperature and sleep against your own baselines. Higher means more recovered. Computed locally — it’s our transparent score, not Oura’s.'},
+    rhr:{fam:'Recovery',name:'Resting HR',accent:R,exp:'Your lowest heart rate while asleep — a core recovery signal. Taken as the nightly minimum of the ring’s overnight heart rate, derived from its inter-beat intervals.'},
+    hrv:{fam:'Recovery',name:'HRV · rMSSD',accent:R,exp:'Heart-rate variability (rMSSD): the millisecond variation between consecutive heartbeats. Higher usually means better recovery and less stress. Computed from the ring’s overnight inter-beat intervals.'},
+    spo2:{fam:'Body',name:'SpO₂ · night',accent:B,exp:'Blood-oxygen saturation overnight, read by the ring’s red/infrared sensor. We calibrate its raw R-ratio into a percentage; frequent dips (the ODI) can flag disrupted breathing. A wellness signal, not a diagnosis.'},
+    temp:{fam:'Body',name:'Temp deviation',accent:B,exp:'Your skin temperature versus your own rolling baseline — the deviation, not the absolute value. Sustained rises can precede illness or track cycle shifts.'},
+    resp:{fam:'Body',name:'Breathing rate',accent:B,exp:'Breaths per minute overnight, derived from the subtle rhythm your breathing imprints on your heart rate (respiratory sinus arrhythmia).'},
+    steps:{fam:'Activity',name:'Steps · today',accent:A,exp:'Your daily step count, tallied on-device from the ring’s motion sensor. Activity intensity (MET) adds context beyond the raw number.'},
+    met:{fam:'Activity · today',name:'Movement · MET',accent:A,exp:'The metabolic equivalent of your movement through the day — 1.0 is rest, 3+ is brisk walking. Estimated from the ring’s on-device activity and motion signal.'},
+    rhr28:{fam:'Recovery · 28 days',name:'Resting HR trend',accent:R,exp:'Your resting heart rate across the last 28 nights, drawn against your baseline band (mean ± SD). The slope shows whether it’s trending up or down.'}
+  };
+  document.querySelectorAll('.tile[data-metric]').forEach(tile=>{
+    const d=DETAIL[tile.dataset.metric]; if(!d) return;
+    const pop=mk('div','pop'), h=mk('div','poph'), dot=mk('span','pdot'); dot.style.background=`var(${d.accent})`;
+    const nm=mk('div','pname',d.name), fam=mk('span','pfam',d.fam); nm.prepend(fam);
+    h.append(dot,nm); pop.append(h, mk('p','pexp',d.exp));
+    tile.append(pop);
+  });
+</script>
+</body>
+</html>

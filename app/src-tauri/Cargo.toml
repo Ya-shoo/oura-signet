@@ -1,0 +1,26 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "oura-local — local-first Oura ring viewer & control"
+authors = ["you"]
+edition = "2021"
+
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Read-only access to the raw open_oura store + the derived app store.
+rusqlite = { version = "0.31", features = ["bundled"] }
+dirs = "5"
+thiserror = "1"

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Signet drives BLE (sync, battery, 0x26 flight-mode) via the open_oura
+	     subprocess; macOS attributes that Bluetooth use to this app, so it needs
+	     a usage string or the OS silently denies access (and can't prompt). -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Signet uses Bluetooth to sync your Oura ring's data to this Mac. Nothing leaves your computer.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Signet uses Bluetooth to sync your Oura ring's data to this Mac. Nothing leaves your computer.</string>
+</dict>
+</plist>

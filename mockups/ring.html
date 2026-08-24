@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>oura-local — Ring & Radio (Dock & Silence)</title>
+<style>
+  :root{
+    --backdrop:#E6DCC9; --bg:#F3ECDF; --card:#FCFAF3; --card-2:#FBF6EB;
+    --ink:#43392E; --ink-soft:#6B6053; --muted:#9C8E7B;
+    --hairline:rgba(120,95,60,.10); --hairline-soft:rgba(120,95,60,.06);
+    --recovery:#6f92ba; --recovery-tint:#EAF0F7;
+    --sleep:#8b81c2; --sleep-tint:#EEEBF7;
+    --body:#d0876a; --body-tint:#F8ECE4;
+    --activity:#7aa17f; --activity-tint:#EBF2EA;
+    --good:#6fa07a; --good-tint:#E9F1EA; --watch:#c9a24e; --watch-tint:#F6EFDC; --dev:#c97e63;
+    --shadow: 0 1px 2px rgba(90,72,48,.05), 0 3px 8px -3px rgba(90,72,48,.10);
+    --shadow-hover: 0 2px 4px rgba(90,72,48,.06), 0 12px 22px -10px rgba(90,72,48,.16);
+    --r-lg:26px; --r-md:20px; --r-sm:14px; --r-pill:999px;
+    --font: ui-rounded, "SF Pro Rounded", "Hiragino Maru Gothic ProN", "Nunito", system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font); color:var(--ink); background:var(--backdrop);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.5'/></svg>");
+    background-blend-mode:multiply; -webkit-font-smoothing:antialiased;
+    display:flex; align-items:center; justify-content:center; padding:18px; min-height:100vh;}
+  .window{width:min(1360px,100%); background:var(--bg); border-radius:22px; box-shadow:0 2px 6px rgba(70,52,30,.10),0 40px 80px -40px rgba(70,52,30,.40); overflow:hidden; border:1px solid rgba(120,95,60,.08); position:relative}
+  .titlebar{height:42px; display:flex; align-items:center; gap:14px; padding:0 18px; background:var(--card); border-bottom:1px solid var(--hairline-soft)}
+  .lights{display:flex; gap:8px}.lights i{width:12px;height:12px;border-radius:50%;display:block}
+  .lights .r{background:#e8a09a}.lights .y{background:#e7c983}.lights .g{background:#a9cf98}
+  .titlebar .app{font-size:13px;color:var(--muted);font-weight:600}
+  .app-body{display:grid; grid-template-columns:74px 1fr}
+  .rail{border-right:1px solid var(--hairline-soft); padding:16px 0; display:flex; flex-direction:column; align-items:center; gap:7px}
+  .brand{width:40px;height:40px;border-radius:13px;background:var(--recovery-tint);display:grid;place-items:center;margin-bottom:8px;box-shadow:var(--shadow)}
+  .brand svg{width:21px;height:21px}
+  .nav{display:flex;flex-direction:column;gap:5px;align-items:center;flex:1}
+  .nav a{width:46px;height:42px;border-radius:14px;display:grid;place-items:center;color:var(--muted);text-decoration:none;transition:.18s ease}
+  .nav a svg{width:21px;height:21px;stroke-width:1.9}
+  .nav a:hover{background:var(--card);color:var(--ink-soft)}
+  .nav a.active{background:var(--card);color:var(--recovery);box-shadow:var(--shadow)}
+
+  .main{padding:14px 26px 14px}
+  .phead{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+  .phead h1{font-size:21px;font-weight:800;letter-spacing:-.01em}
+  .phead .sub{font-size:12.5px;color:var(--muted);font-weight:600}
+  .cols{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+  .card{background:var(--card);border-radius:var(--r-lg);border:1px solid var(--hairline-soft);box-shadow:var(--shadow);padding:20px}
+  .card+.card{margin-top:16px}
+  .card h2{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:14px}
+
+  /* radio hero */
+  .radio{display:flex;gap:22px;align-items:center}
+  .ringart{width:118px;height:118px;flex:none;position:relative;display:grid;place-items:center}
+  .ringart svg{width:118px;height:118px}
+  .ringart .pct{position:absolute;text-align:center}
+  .ringart .pct b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  .ringart .pct span{display:block;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .radio-main{flex:1}
+  .statepill{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:700;padding:8px 15px;border-radius:var(--r-pill);background:var(--good-tint);color:#4e7358}
+  .statepill.silent{background:var(--sleep-tint);color:#6a61a6}
+  .statepill .dot{width:10px;height:10px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(111,160,122,.5);animation:pulse 2s infinite}
+  .statepill.silent .dot{background:#8b81c2;animation:none;box-shadow:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(111,160,122,.45)}70%{box-shadow:0 0 0 9px rgba(111,160,122,0)}100%{box-shadow:0 0 0 0 rgba(111,160,122,0)}}
+  .radio-title{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:12px 0 4px}
+  .radio-desc{font-size:13px;color:var(--ink-soft);font-weight:600;line-height:1.5;max-width:44ch}
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .btn{font-family:var(--font);font-size:14.5px;font-weight:800;letter-spacing:-.01em;cursor:pointer;border:none;border-radius:var(--r-pill);padding:13px 22px;display:inline-flex;align-items:center;gap:9px;transition:.18s ease;color:#fff;background:var(--sleep);box-shadow:var(--shadow)}
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);filter:saturate(1.05)}
+  .btn svg{width:17px;height:17px}
+  .btn.ghost{background:var(--card-2);color:var(--ink-soft);box-shadow:none;border:1px solid var(--hairline)}
+  .btn.ghost:hover{background:var(--card);transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn.wide{background:var(--good)}
+  .metarow{display:flex;gap:26px;margin-top:20px;padding-top:16px;border-top:1px solid var(--hairline-soft);flex-wrap:wrap}
+  .metarow div{display:flex;flex-direction:column;gap:2px}
+  .metarow .k{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .metarow .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+
+  /* the on/off explainer */
+  .switch-explain{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .se{background:var(--card-2);border:1px solid var(--hairline-soft);border-radius:16px;padding:13px 15px;display:flex;gap:11px;align-items:center}
+  .se .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none}
+  .se.off .ic{background:var(--sleep-tint);color:var(--sleep)}
+  .se.on .ic{background:var(--good-tint);color:var(--good)}
+  .se .ic svg{width:18px;height:18px;stroke-width:2}
+  .se .t{font-size:12.5px;font-weight:800}
+  .se .d{font-size:11px;color:var(--muted);font-weight:600}
+
+  /* feature toggles */
+  .frow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--hairline-soft)}
+  .frow:last-child{border-bottom:none}
+  .frow .fic{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;flex:none}
+  .frow .fic svg{width:17px;height:17px;stroke-width:2}
+  .frow .fl{flex:1}
+  .frow .fl b{font-size:13.5px;font-weight:700;display:block}
+  .frow .fl span{font-size:11.5px;color:var(--muted);font-weight:600}
+  .tgl{width:44px;height:26px;border-radius:var(--r-pill);background:#e2d8c6;position:relative;cursor:pointer;transition:.2s ease;flex:none}
+  .tgl::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:.22s cubic-bezier(.2,.9,.3,1.3)}
+  .tgl.on{background:var(--good)}
+  .tgl.on::after{left:21px}
+
+  /* device info */
+  .drow{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--hairline-soft)}
+  .drow:last-child{border-bottom:none}
+  .drow span{color:var(--muted);font-weight:600}
+  .drow b{font-weight:800;font-variant-numeric:tabular-nums}
+  .drow b.ok{color:var(--good)}
+
+  /* recent syncs */
+  .srow{display:flex;align-items:center;gap:11px;font-size:13px;padding:9px 0;border-bottom:1px solid var(--hairline-soft)}
+  .srow:last-child{border-bottom:none}
+  .srow .sd{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none}
+  .srow .st{flex:1;font-weight:700}
+  .srow .sc{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+  /* ---- modal ---- */
+  .scrim{position:absolute;inset:0;background:rgba(60,44,26,.34);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:60}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .modal{width:460px;max-width:92%;background:var(--card);border-radius:26px;border:1px solid var(--hairline);
+    box-shadow:0 12px 30px -10px rgba(60,44,26,.4),0 40px 80px -30px rgba(60,44,26,.5);padding:26px 26px 22px;
+    transform:translateY(10px) scale(.96);transition:transform .26s cubic-bezier(.2,.9,.3,1.25);text-align:center}
+  .scrim.open .modal{transform:none}
+  .micon{width:60px;height:60px;border-radius:20px;background:var(--sleep-tint);color:var(--sleep);display:grid;place-items:center;margin:0 auto 14px}
+  .micon svg{width:32px;height:32px;stroke-width:1.9}
+  .modal h3{font-size:21px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px}
+  .modal .lead{font-size:13.5px;color:var(--ink-soft);font-weight:600;line-height:1.5;margin-bottom:16px}
+  .facts{text-align:left;display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+  .fact{display:flex;gap:11px;align-items:flex-start}
+  .fact .fi{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;flex:none;margin-top:1px}
+  .fact .fi svg{width:15px;height:15px;stroke-width:2.2}
+  .fact.good .fi{background:var(--good-tint);color:var(--good)}
+  .fact.mute .fi{background:var(--card-2);color:var(--muted)}
+  .fact.key .fi{background:var(--recovery-tint);color:var(--recovery)}
+  .fact p{font-size:12.5px;font-weight:600;color:var(--ink-soft);line-height:1.45}
+  .fact p b{color:var(--ink);font-weight:800}
+  .nudge{display:flex;gap:11px;align-items:center;text-align:left;background:var(--watch-tint);border:1px solid rgba(201,162,78,.28);border-radius:16px;padding:12px 14px;margin-bottom:18px}
+  .nudge .ni{width:30px;height:30px;border-radius:10px;background:#efdca9;color:#9a7b28;display:grid;place-items:center;flex:none}
+  .nudge .ni svg{width:16px;height:16px;stroke-width:2.2}
+  .nudge p{font-size:12px;font-weight:700;color:#7c6320;line-height:1.4}
+  .nudge p span{display:block;font-weight:600;color:#9a8348}
+  .mbtns{display:flex;gap:10px}
+  .mbtns .btn{flex:1;justify-content:center}
+  .mfoot{font-size:11px;color:var(--muted);font-weight:600;margin-top:12px}
+  .mfoot svg{width:12px;height:12px;vertical-align:-1px;margin-right:3px}
+
+  /* toast */
+  .toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);background:var(--ink);color:#FBF6EB;
+    font-size:13px;font-weight:700;padding:11px 18px;border-radius:var(--r-pill);box-shadow:0 10px 26px -8px rgba(0,0,0,.4);
+    display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:.28s cubic-bezier(.2,.9,.3,1.2);z-index:70}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast .sp{width:14px;height:14px;border-radius:50%;border:2px solid rgba(251,246,235,.35);border-top-color:#a9cf98;animation:spin .7s linear infinite}
+  .toast .ok{color:#a9cf98}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar"><div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div><div class="app">oura-local</div></div>
+    <div class="app-body">
+      <aside class="rail">
+        <div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="#6f92ba" stroke-width="2.1"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="#6f92ba" stroke="none"/></svg></div>
+        <nav class="nav">
+          <a title="Home" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6"/><path d="M6 10v9h12v-9"/></svg></a>
+          <a title="Trends" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15c3 0 4-8 8-8s5 6 8 6"/></svg></a>
+          <a title="Sleep" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg></a>
+          <a title="Body" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-4.6-6-9a6 6 0 0 1 12 0c0 4.4-6 9-6 9z"/></svg></a>
+          <a title="Activity" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 5 4-12 2 7h4"/></svg></a>
+          <a class="active" title="Ring" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="6"/><path d="M9 6l1-2h4l1 2"/></svg></a>
+          <a title="Settings" href="#" style="margin-top:auto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M18.5 5.5l-2 2M7.5 16.5l-2 2"/></svg></a>
+        </nav>
+      </aside>
+
+      <main class="main">
+        <div class="phead"><h1>Ring &amp; Radio</h1><span class="sub" id="crumb">Oura Ring Gen 3 · XXXXXXXXXXXXXX · on the charger</span></div>
+
+        <div class="cols">
+          <!-- LEFT: radio hero + toggles -->
+          <div>
+            <div class="card">
+              <div class="radio">
+                <div class="ringart">
+                  <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--good-tint)" stroke-width="12"/><circle id="batarc" cx="60" cy="60" r="50" fill="none" stroke="var(--good)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="44" transform="rotate(-90 60 60)"/></svg>
+                  <div class="pct"><b>86%</b><span>battery</span></div>
+                </div>
+                <div class="radio-main">
+                  <span class="statepill" id="statepill"><span class="dot"></span><span id="statetext">Radio on · syncable</span></span>
+                  <div class="radio-title" id="radiotitle">Ready to sync</div>
+                  <div class="radio-desc" id="radiodesc">The ring's radio is on while it's docked. Silence it to go radio-dark — it keeps recording, and wakes again the moment you dock it.</div>
+                  <div class="actions" id="actions">
+                    <button class="btn ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-3 6"/><path d="M20 5v6h-6"/></svg>Sync now</button>
+                    <button class="btn" id="silenceBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg>Dock &amp; Silence</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="switch-explain">
+                <div class="se off"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg></span><div><div class="t">Off = a tap</div><div class="d">Silence sends the radio dark</div></div></div>
+                <div class="se on"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="9" rx="2.5"/><path d="M8 9V7a4 4 0 0 1 8 0v2"/></svg></span><div><div class="t">On = a dock</div><div class="d">Charger wakes it automatically</div></div></div>
+              </div>
+
+              <div class="metarow">
+                <div><span class="k">Last sync</span><span class="v">7m ago</span></div>
+                <div><span class="k">Worn</span><span class="v">7h 12m</span></div>
+                <div><span class="k">On-ring buffer</span><span class="v">~2 days</span></div>
+                <div><span class="k">Radio</span><span class="v" id="metaradio" style="color:var(--good)">On</span></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Measurement</h2>
+              <div class="frow"><span class="fic" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 3 10 2-6 2 3h5"/></svg></span><div class="fl"><b>Daytime heart rate</b><span>automatic</span></div><div class="tgl on"></div></div>
+              <div class="frow"><span class="fic" style="background:var(--recovery-tint);color:var(--recovery)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2 6 4-14 3 10 2-4h4"/></svg></span><div class="fl"><b>Resting HR &amp; HRV</b><span>overnight</span></div><div class="tgl on"></div></div>
+              <div class="frow"><span class="fic" style="background:var(--body-tint);color:var(--body)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></span><div class="fl"><b>SpO₂ &amp; breathing</b><span>overnight</span></div><div class="tgl on"></div></div>
+              <div class="frow"><span class="fic" style="background:var(--activity-tint);color:var(--activity)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c1.6 0 2.5 1.6 2.5 4S10.5 15 9 15M15 8c1.5 0 2.4 1.6 2.4 4s-1 4-2.4 4"/></svg></span><div class="fl"><b>Steps &amp; activity</b><span>real-steps · on</span></div><div class="tgl on"></div></div>
+            </div>
+          </div>
+
+          <!-- RIGHT: device + syncs -->
+          <div>
+            <div class="card">
+              <h2>Device</h2>
+              <div class="drow"><span>Firmware</span><b>3.4.3</b></div>
+              <div class="drow"><span>Serial</span><b>XXXXXXXXXXXXXX</b></div>
+              <div class="drow"><span>Hardware</span><b>BLB_03 · Gen 3</b></div>
+              <div class="drow"><span>MAC</span><b>a0:38:f8:2b:11:c8</b></div>
+              <div class="drow"><span>Auth key</span><b class="ok">In Keychain ✓</b></div>
+              <div class="drow"><span>Account</span><b class="ok">None · fully local</b></div>
+            </div>
+
+            <div class="card">
+              <h2>Recent syncs</h2>
+              <div class="srow"><span class="sd"></span><span class="st">Today · 7:12a</span><span class="sc">1,330 events</span></div>
+              <div class="srow"><span class="sd"></span><span class="st">Yesterday · 11:04p</span><span class="sc">903 events</span></div>
+              <div class="srow"><span class="sd"></span><span class="st">Mon · 8:30a</span><span class="sc">2,014 events</span></div>
+              <div class="srow"><span class="sd" style="background:var(--muted)"></span><span class="st">Sun · 9:12p</span><span class="sc">1,120 events</span></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- confirmation modal -->
+    <div class="scrim" id="scrim">
+      <div class="modal" role="dialog" aria-label="Silence the ring">
+        <div class="micon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14a7 7 0 1 1-8-9 6 6 0 0 0 8 9z"/></svg></div>
+        <h3>Silence the ring?</h3>
+        <p class="lead">This switches off the ring's Bluetooth radio for privacy. Here's exactly what happens:</p>
+        <div class="facts">
+          <div class="fact good"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><p>It <b>keeps recording on-device</b> — up to ~7 days of data waits safely on the ring.</p></div>
+          <div class="fact mute"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg></span><p>You <b>can't sync or connect</b> while it's silent — it's fully radio-dark.</p></div>
+          <div class="fact key"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6"/><path d="M4 4v5h5"/></svg></span><p>It <b>wakes automatically the moment you dock it</b> — that's the on-switch, no button needed.</p></div>
+        </div>
+        <div class="nudge"><span class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></span><p>3h 22m of new data hasn't synced yet.<span>We'll sync first so nothing's stranded on the ring.</span></p></div>
+        <div class="mbtns">
+          <button class="btn ghost" id="cancelBtn">Cancel</button>
+          <button class="btn" id="confirmBtn">Sync &amp; silence</button>
+        </div>
+        <div class="mfoot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>We'll confirm the radio actually goes quiet before you undock.</div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+<script>
+  const $=s=>document.querySelector(s);
+  const scrim=$('#scrim'), toast=$('#toast');
+  function openModal(){scrim.classList.add('open');}
+  function closeModal(){scrim.classList.remove('open');}
+  function showToast(html,dur){toast.innerHTML=html;toast.classList.add('on');if(dur)setTimeout(()=>toast.classList.remove('on'),dur);}
+
+  $('#silenceBtn').addEventListener('click',openModal);
+  $('#cancelBtn').addEventListener('click',closeModal);
+  scrim.addEventListener('click',e=>{if(e.target===scrim)closeModal();});
+
+  function setSilent(){
+    $('#statepill').classList.add('silent');
+    $('#statetext').textContent='Silent · recording';
+    $('#radiotitle').textContent='Radio dark';
+    $('#radiodesc').textContent='The ring is recording on-device with its radio off. Dock it on the charger to wake it and sync — no button needed.';
+    $('#metaradio').textContent='Silent'; $('#metaradio').style.color='var(--sleep)';
+    $('#crumb').textContent='Oura Ring Gen 3 · XXXXXXXXXXXXXX · silent (recording)';
+    $('#actions').innerHTML='<button class="btn wide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6"/><path d="M4 4v5h5"/></svg>Dock to wake &amp; sync</button>';
+  }
+  $('#confirmBtn').addEventListener('click',()=>{
+    closeModal();
+    showToast('<span class="sp"></span>Syncing 3h 22m, then silencing…');
+    setTimeout(()=>{ setSilent(); showToast('<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#a9cf98" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span class="ok">Radio silent — confirmed dark</span>', 3200); }, 1500);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# --- Secrets / keys: NEVER commit ---
+*.key
+*.pem
+*.p12
+*.crt
+*.hex
+key*
+model_key*
+*.token
+
+# --- Personal data / databases ---
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+captures/
+interpret/out/
+
+# --- Proprietary / derived models: not distributed ---
+oura_models/
+*.pt
+
+# --- Upstream BLE toolkit clone (reproduce from source; may hold keys/captures) ---
+/open_oura/
+
+# --- Code-signing material (local only) ---
+signing/
+
+# --- Python ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- Node / Vite ---
+node_modules/
+dist/
+
+# --- Rust / Tauri ---
+target/
+/app/src-tauri/target/
+/app/src-tauri/gen/
+
+# --- OS / logs ---
+.DS_Store
+*.log
